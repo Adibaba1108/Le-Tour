@@ -1,7 +1,7 @@
 class APIFeatures {
     constructor(query, queryString) {
       this.query = query; //this is mongoose query
-      this.queryString = queryString; //this is the query string that we get from express(req.query)coming from the route
+      this.queryString = queryString; //this is the query string that we get from express(req.query)coming from the router
     }
   //Build QUERY we won't make it await as we will need to add sort page limit,etc fields to it too.
 

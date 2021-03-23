@@ -77,7 +77,7 @@ exports.createTour = async (req,res)=>{
 
         //We imported Tour model from the tourModel file and then created a new doc with it's help
         //and named it newTour
-        const newTour = await Tour.create(req.body);//Using async await becaute this Tour.create returns a promise
+        const newTour = await Tour.create(req.body);//Using async await becaute this Tour.create returns a promise -> //Mongoose queries are not promises. They have a .then() function for co and async/await as a convenience. However, unlike promises, calling a query's .then() can execute the query multiple times.
         
         res.status(201).json({
             status : 'success',
@@ -139,3 +139,104 @@ exports.deleteTour = async (req,res)=>{
     }
     
 };
+
+//The Aggregation Pipeline-:Aggregation of a Mongo database 
+//encompasses statistics like averages, sums, minimums, and maximums. 
+//To begin using the aggregation pipeline, we’ll create a new handler:
+//It is a pipeline as it will work as one,and every stages in it also works as a pipeline
+exports.getTourStats = async (req, res) => {
+    try {//We pass an array of objects, called stages, as an argument into the aggregate() method
+      const stats = await Tour.aggregate([
+        {
+          $match: { ratingsAverage: { $gte: 4.5 } }//. The $match stage is pretty much just a filter query
+        },
+        {
+          $group: {
+            _id: { $toUpper: '$difficulty' },//if _id set to null then it will target all the documents in the collection. Thus id targets all that match the $match stage.
+            numTours: { $sum: 1 },//$sum: 1 might look tricky, but it’s really just saying, “Every time a tour passes through this pipeline, add 1 to the accumulator.”
+            numRatings: { $sum: '$ratingsQuantity' },
+            avgRating: { $avg: '$ratingsAverage' },
+            avgPrice: { $avg: '$price' },
+            minPrice: { $min: '$price' },
+            maxPrice: { $max: '$price' }
+          }
+        },
+        {
+          $sort: { avgPrice: 1 }//If we then want to sort these three objects in the "stats" array by average prices.
+          //Here we took avgPrice as the variable name will be changed acc to grp stage.
+        }
+        // {
+        //   $match: { _id: { $ne: 'EASY' } }//We can even repeat a stage to filter out more data
+        // }
+      ]);
+  
+      res.status(200).json({
+        status: 'success',
+        data: {
+          stats
+        }
+      });
+    } catch (err) {
+      res.status(404).json({
+        status: 'fail',
+        message: err
+      });
+    }
+  };
+//the startDates field is an array,we have the option to create a new document
+// for each individual start date by using an $unwind stage
+  exports.getMonthlyPlan = async (req, res) => {
+    try {
+      const year = req.params.year * 1; // 2021
+  
+      const plan = await Tour.aggregate([
+        {
+          $unwind: '$startDates' //Now we will get 27 results from our original 9 tours, 
+          //each having one start date. 
+        },
+        {//The next step is to specify a year with a $match stage.
+          $match: {
+            startDates: {
+              $gte: new Date(`${year}-01-01`),
+              $lte: new Date(`${year}-12-31`)
+            }
+          }
+        },
+        {// group the tours by month
+          $group: {
+            _id: { $month: '$startDates' },
+            numTourStarts: { $sum: 1 },
+            tours: { $push: '$name' }
+          }
+        },
+        {
+          $addFields: { month: '$_id' } //It’d be nice if "_id" was "month" instead
+        },
+        {
+          $project: {
+            _id: 0 //$project stage, we set the fields we want to hide to 0
+          }
+        },
+        {
+          $sort: { numTourStarts: -1 }//sort our data by numTourStarts, assigning -1 for descending
+        },
+        {
+          $limit: 12
+        }
+      ]);
+  
+      res.status(200).json({
+        status: 'success',
+        data: {
+          plan
+        }
+      });
+    } catch (err) {
+      res.status(404).json({
+        status: 'fail',
+        message: err
+      });
+    }
+  };
+  
+  
