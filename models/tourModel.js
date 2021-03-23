@@ -65,8 +65,22 @@ const tourSchema = new mongoose.Schema({
     //can be said as the instances of the tour starting on different dates
 
 
+},
+{
+    toJSON: { virtuals : true},
+    toObject: { virtuals : true}
 });
+//Virtual properties are fields on a document that will not be stored in the database
+//we’ll create a durationWeeks property derived from our duration (in days) property
 
+//After specifying the property name in the virtual() method, we the chain an Express get() method and
+// pass in a function that handles the calculation we want.
+tourSchema.virtual('durationWeeks').get(function(){
+    return this.duration / 7;
+});//We have to use get() because this property is only created when a GET request is made. 
+//Note that we can’t use an arrow function here because arrow functions use lexical this binding.
+// We don’t want that; we want this to point to the document in question when the function is called.
+//This is done here not in the controllers as the schema has to follow MVC architecture and keep business logic as much in the model as possible.
 const Tour = mongoose.model('Tour' , tourSchema); 
 
 module.exports = Tour;
