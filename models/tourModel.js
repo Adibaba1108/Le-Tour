@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const slugify = require('slugify');
 
 
 //First we will create a schema which will help us to make a model
@@ -13,6 +14,7 @@ const tourSchema = new mongoose.Schema({
         minlength: [10, 'A tour name must have more or equal then 10 characters']
         // validate: [validator.isAlpha, 'Tour name must only contain characters']
     },
+    slug: String,
     duration: {
         type: Number,
         required: [true, 'A tour must have a duration']
@@ -63,7 +65,10 @@ const tourSchema = new mongoose.Schema({
     },
     startDates: [Date], //diff dates at which a tour starts,i.e diff dates for the same tour or 
     //can be said as the instances of the tour starting on different dates
-
+    secretTour: {
+        type: Boolean,
+        default: false
+      }
 
 },
 {
@@ -81,6 +86,46 @@ tourSchema.virtual('durationWeeks').get(function(){
 //Note that we can’t use an arrow function here because arrow functions use lexical this binding.
 // We don’t want that; we want this to point to the document in question when the function is called.
 //This is done here not in the controllers as the schema has to follow MVC architecture and keep business logic as much in the model as possible.
+
+//We can define functions in Mongoose to run before or after certain events,
+// like saving a new document.
+
+//Document Middleware: ****runs before .save() and .create()****
+//(can actually work for remove and validate also)
+tourSchema.pre('save', function(next) {//here save is the hook
+    this.slug = slugify(this.name, { lower: true });//this points to the current document being saved.
+    next();//Now, we’ll use this function to create a slug out of the tour’s name using the slugify package from npm.
+  });// We’ll also give our middleware access to the next() function so that we don’t run into any problems when we add more middleware.
+
+
+//QUERY MIDDLEWARE
+//regex is used for all the query which have find in it...like find(),findOne(),findOneAndRemove().
+tourSchema.pre(/^find/, function(next) {//The difference is that the hook is now 'find' (for the find() method) instead of 'save':
+    this.find({ secretTour: { $ne: true } });//this points to the current query, to which we’re chaining another find() method before its execution. 
+  //simply shows only those tours publicly which have secret tour ->false
+    this.start = Date.now();
+    next();
+  });
+  
+  tourSchema.post(/^find/, function(docs, next) {
+    console.log(`Query took ${Date.now() - this.start} milliseconds!`);
+    next();
+  });
+
+  //Aggregation Middleware
+  //Let’s say we also wanted to exclude our secret tour from any of our aggregations.
+  // Rater than add a new $match stage to each of our aggregations, we’ll add this middleware
+
+  tourSchema.pre('aggregate', function(next) {
+    this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });//we are adding one more filter here in terms of secret tour,
+    //we are using unshift as we have to insert in the begining of the array
+    next();
+
+  });
+ // Now the secret tour is excluded from all of our aggregations.
+
+
+
 const Tour = mongoose.model('Tour' , tourSchema); 
 
 module.exports = Tour;

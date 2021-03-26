@@ -14,7 +14,8 @@
     "express": "^4.17.1",
     "mongoose": "^5.12.0",
     "morgan": "^1.10.0",
-    "nodemon": "^2.0.7"
+    "nodemon": "^2.0.7",
+    "slugify": "^1.5.0"
   },
   "devDependencies": {
     "eslint": "^7.22.0",
@@ -27,5 +28,4 @@
     "eslint-plugin-react": "^7.22.0",
     "prettier": "^2.2.1"
   }
- 
 }
