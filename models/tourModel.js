@@ -26,11 +26,16 @@ const tourSchema = new mongoose.Schema({
     difficulty: {
         type: String,
         required: [true, 'A tour must have a difficulty'],
-       
+        enum:{
+            values: ['easy','medium','difficult'],
+            message: 'Difficulty can be only easy,medium or difficulty'
+        } 
     },
     ratingsAverage: {
         type: Number,
         default: 4.5,
+        min: [1,'Rating must be above 1.0'],
+        max: [5,'Rating must be below 5.0']
     },
     ratingsQuantity: {
         type: Number,
@@ -42,6 +47,15 @@ const tourSchema = new mongoose.Schema({
     },
     priceDiscount: {
         type: Number,
+        validate: {
+            validator: function(val) {
+                 // this only points to current doc on NEW document creation ,means only when created not during updation
+                return val < this.price;
+            },
+            message: 'Discount price ({VALUE}) should be below regular price'
+
+        }
+       
         
     },
     summary: {
@@ -92,6 +106,7 @@ tourSchema.virtual('durationWeeks').get(function(){
 
 //Document Middleware: ****runs before .save() and .create()****
 //(can actually work for remove and validate also)
+
 tourSchema.pre('save', function(next) {//here save is the hook
     this.slug = slugify(this.name, { lower: true });//this points to the current document being saved.
     next();//Now, we’ll use this function to create a slug out of the tour’s name using the slugify package from npm.
@@ -100,14 +115,17 @@ tourSchema.pre('save', function(next) {//here save is the hook
 
 //QUERY MIDDLEWARE
 //regex is used for all the query which have find in it...like find(),findOne(),findOneAndRemove().
+
 tourSchema.pre(/^find/, function(next) {//The difference is that the hook is now 'find' (for the find() method) instead of 'save':
+    
     this.find({ secretTour: { $ne: true } });//this points to the current query, to which we’re chaining another find() method before its execution. 
   //simply shows only those tours publicly which have secret tour ->false
     this.start = Date.now();
     next();
   });
   
-  tourSchema.post(/^find/, function(docs, next) {
+tourSchema.post(/^find/, function(docs, next) {
+    
     console.log(`Query took ${Date.now() - this.start} milliseconds!`);
     next();
   });
@@ -117,6 +135,7 @@ tourSchema.pre(/^find/, function(next) {//The difference is that the hook is now
   // Rater than add a new $match stage to each of our aggregations, we’ll add this middleware
 
   tourSchema.pre('aggregate', function(next) {
+    
     this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });//we are adding one more filter here in terms of secret tour,
     //we are using unshift as we have to insert in the begining of the array
     next();
