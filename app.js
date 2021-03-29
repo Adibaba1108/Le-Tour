@@ -22,10 +22,7 @@ app.use(express.json());//middleware is used here like this.
 // efficient content types to transmit over the Internet.
 app.use(express.static(`${__dirname}/public`));
 
-app.use((req, res, next) => {
-    console.log('Hello from the middleware 👋');
-    next();
-  });
+
 //----adding another middleware----
 app.use((req,res,next)=>{
     req.requestTime = new Date().toISOString();//--just adding time at which request is made and storing it in the inbuilt method of req
@@ -40,4 +37,12 @@ app.use((req,res,next)=>{
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 
+//--middleware for handling unhandled routes--//
+app.all( '*' ,(req,res,next) => {//The all() method encompasses all types of requests, including GET and PATCH, 
+    //and the asterisk accepts any URL
+    res.status(404).json({//Now we define a middleware that sends a JSend response.
+        status : 'fail',
+        message : `Can't find ${req.originalUrl} on this server!!` 
+    });
+}); 
 module.exports = app;
