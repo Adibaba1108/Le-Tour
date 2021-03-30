@@ -3,6 +3,8 @@
 const fs = require('fs');
 const express = require('express');
 const morgan = require('morgan');
+const AppError = require('./utils/appError');
+const globalErrorHandler = require('./controllers/errorController')
 
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
@@ -40,9 +42,12 @@ app.use('/api/v1/users', userRouter);
 //--middleware for handling unhandled routes--//
 app.all( '*' ,(req,res,next) => {//The all() method encompasses all types of requests, including GET and PATCH, 
     //and the asterisk accepts any URL
-    res.status(404).json({//Now we define a middleware that sends a JSend response.
-        status : 'fail',
-        message : `Can't find ${req.originalUrl} on this server!!` 
-    });
+
+
+    next(new AppError(`Can't find ${req.originalUrl} on this server!!`,404));  //passing the error in the next,
+    //so whenever we passes anything in next express will know there is an error and will skip all the middlewares in between and send it to global error handling middleware.
+
 }); 
+
+app.use(globalErrorHandler);
 module.exports = app;
