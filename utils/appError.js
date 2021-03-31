@@ -1,3 +1,5 @@
+//A common practice is to take the native Error object and expand on it with our own class.
+
 class AppError extends Error
 {
     constructor(message,statusCode)
