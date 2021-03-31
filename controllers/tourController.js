@@ -65,9 +65,8 @@ const tours = await features.query;
 exports.getTour = catchAsync(async (req, res, next) =>{
       //returns «Query»
       const tour = await Tour.findById(req.params.id);
-      console.log('hiye!!');
       //Tour.findOne({_id : req.params.id})//above command can be written like this but mongoose provide us an easier method.
-      if (!tour) {
+      if (!tour) {//if we pass in a valid Mongo ID that happens not to exist in our database, we get a response with tour set to null
         return next(new AppError('No tour found with that ID', 404));
       }
     
