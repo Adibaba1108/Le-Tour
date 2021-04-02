@@ -2,12 +2,12 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 
 //Uncaught exceptions are like unhandled rejections, but are in synchronous code and have nothing to do with promises
-//A key difference from unhandled rejections is that we no longer need a callback function, as this is not asynchronous code
+
 //Also we have put this block of code at the top of the file before we require the app, because any bugs that come before we define this method will not be caught.
 process.on('uncaughtException', err => {
   console.log('UNCAUGHT EXCEPTION! 💥 Shutting down...');
   console.log(err.name, err.message);
-  process.exit(1);
+  process.exit(1);////A key difference from unhandled rejections is that we no longer need a callback function, as this is not asynchronous code
 });
 
 ///---dotnev read this from the file and then
