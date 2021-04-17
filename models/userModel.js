@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Please provide a password'],
         minlength: 8,
-        select: false
+        select: false //password will not be visible in the output
       },
     passwordConfirm: {
         type: String,
@@ -49,6 +49,14 @@ userSchema.pre('save', async function(next) {
     this.passwordConfirm = undefined;
     next();
   });
+
+  //It is an instance method ,that we have created below,it means that it is gonna be available on all the documents of certain collection.
+  userSchema.methods.correctPassword = async function(candidatePassword,userPassword) 
+  {//this here points to the current doc
+    return await bcrypt.compare(candidatePassword, userPassword); 
+    //We cannot compare manually as the candidate password is not hashed and userPass is hashed,thus we used function-:"compare"
+  };
+  
 
 const User = mongoose.model('User' , userSchema); 
 

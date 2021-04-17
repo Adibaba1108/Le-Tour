@@ -2,6 +2,7 @@ const express = require('express');
 
 const router = express.Router();
 const tourController = require('./../controllers/tourController');
+const authController = require('./../controllers/authController');
 
 //router.param('id', tourController.checkID);
 
@@ -19,7 +20,7 @@ router.route('/monthly-plan/:year').get(tourController.getMonthlyPlan);
 
 router
     .route('/')
-    .get(tourController.getAllTours)
+    .get(authController.protect,tourController.getAllTours) //getAllTours route should be accessible only to logged-in users , to accomplish this, we’ll create a middleware and add it to that route.
     .post(tourController.createTour);
 //--A Post req---///---We can see the the url remain same but only the HTTP method changed...just the way REST api works.
 //--Here in post we data flows from client to server,and this data is ideally stored in req,but express put it in middleware.It is just a step that the req goes through while it's being processed.

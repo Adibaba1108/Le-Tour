@@ -28,6 +28,7 @@ app.use(express.static(`${__dirname}/public`));
 //----adding another middleware----
 app.use((req,res,next)=>{
     req.requestTime = new Date().toISOString();//--just adding time at which request is made and storing it in the inbuilt method of req
+    //console.log(req.headers);
     next();
 })
 
