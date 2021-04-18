@@ -1,11 +1,13 @@
 const jwt = require('jsonwebtoken');
+const { promisify } = require('util'); //rather than taking whole util library we take only promise via destructuring
 const User = require('./../models/userModel');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
 
-
+//jwt.sign function takes the payload, secret and options as its arguments. The payload can be used to find out which user is the owner of the token. Options can have an expire time until which token is valid.
+//The generated token will be a string.We are then sending the generated token back to the client in the response body. The client should preserve this token for future requests.
 const signToken = id => {
-    // using jwt.sign(), which takes an ID and secret as parameters.
+    // create a JWT using jwt.sign(), which takes an ID and secret as parameters.
    // nothing fancy in secret key, but it should be at least 32 characters long
     return jwt.sign({ id }, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRES_IN
@@ -85,6 +87,7 @@ exports.login = catchAsync(async (req, res, next) => {
         return next(new AppError('Incorrect email or password', 401));//401 -: unauthorized
     }
   
+    //Now some more authentication --a bit of advance from very basic---
     // 3) If everything ok, send token to client
 
     const token = signToken(user._id);
@@ -120,28 +123,32 @@ exports.protect = catchAsync(async(req,res,next) => {
     }
 
     // 2) Verification token
+    //verify() method from the jwt package takes in token and the secret to create a test signature which it will check later
+    //function is asynchronous but does not return a promise by default, so we’ll make it return a promise by using the promisify() function from the util module.
     const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+    //rather than doing try and catch we created a new error in our global error handler file for "JsonWebTokenError" specially.
+    //console.log(decoded);
 
-    // 3) Check if user still exists
-    const currentUser = await User.findById(decoded.id);
-    if (!currentUser) {
-        return next(
-        new AppError(
-            'The user belonging to this token does no longer exist.',
-            401
-        )
-        );
-    }
+    // // 3) Check if user still exists
+    // const currentUser = await User.findById(decoded.id);
+    // if (!currentUser) {
+    //     return next(
+    //     new AppError(
+    //         'The user belonging to this token does no longer exist.',
+    //         401
+    //     )
+    //     );
+    // }
 
-    // 4) Check if user changed password after the token was issued
-    if (currentUser.changedPasswordAfter(decoded.iat)) {
-        return next(
-        new AppError('User recently changed password! Please log in again.', 401)
-        );
-    }
+    // // 4) Check if user changed password after the token was issued
+    // if (currentUser.changedPasswordAfter(decoded.iat)) {
+    //     return next(
+    //     new AppError('User recently changed password! Please log in again.', 401)
+    //     );
+    // }
 
-    // GRANT ACCESS TO PROTECTED ROUTE
-    req.user = currentUser;
+    // // GRANT ACCESS TO PROTECTED ROUTE
+    // req.user = currentUser;
 
     next();
 });
