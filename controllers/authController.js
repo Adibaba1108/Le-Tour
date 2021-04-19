@@ -125,30 +125,32 @@ exports.protect = catchAsync(async(req,res,next) => {
     // 2) Verification token
     //verify() method from the jwt package takes in token and the secret to create a test signature which it will check later
     //function is asynchronous but does not return a promise by default, so we’ll make it return a promise by using the promisify() function from the util module.
-    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+
+    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);// decoded will look like->{ id: '607c879a3f49582e901c8e35', iat: 1618773915, exp: 1626549915 }
+    
     //rather than doing try and catch we created a new error in our global error handler file for "JsonWebTokenError" specially.
     //console.log(decoded);
 
-    // // 3) Check if user still exists
-    // const currentUser = await User.findById(decoded.id);
-    // if (!currentUser) {
-    //     return next(
-    //     new AppError(
-    //         'The user belonging to this token does no longer exist.',
-    //         401
-    //     )
-    //     );
-    // }
+    // // 3) Check if user still exists,If a user logs in but then deletes their account, someone else could potentially gain access to their JWT before it expires.
+    const currentUser = await User.findById(decoded.id);
+    if (!currentUser) {
+        return next(
+        new AppError(
+            'The user belonging to this token does no longer exist.',
+            401
+        )
+        );
+    }
 
     // // 4) Check if user changed password after the token was issued
-    // if (currentUser.changedPasswordAfter(decoded.iat)) {
-    //     return next(
-    //     new AppError('User recently changed password! Please log in again.', 401)
-    //     );
-    // }
+    if (currentUser.changedPasswordAfter(decoded.iat)) {//as curruser is model doc so we can use the instance method directly on it
+        return next(
+        new AppError('User recently changed password! Please log in again.', 401)
+        );
+    }
 
-    // // GRANT ACCESS TO PROTECTED ROUTE
-    // req.user = currentUser;
+    // GRANT ACCESS TO PROTECTED ROUTE
+    req.user = currentUser;
 
     next();
 });

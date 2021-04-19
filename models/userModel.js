@@ -31,7 +31,8 @@ const userSchema = new mongoose.Schema({
                 return el == this.password;
             },
             meassage: 'Passwprds are not the same!!'
-        }
+        },
+        passwordChangedAt: Date //only if any user model have this field means then only we will check it is changed before the token given or after
     }
 
 });
@@ -56,6 +57,23 @@ userSchema.pre('save', async function(next) {
     return await bcrypt.compare(candidatePassword, userPassword); 
     //We cannot compare manually as the candidate password is not hashed and userPass is hashed,thus we used function-:"compare"
   };
+
+  //Another Instance method-:
+  userSchema.methods.changedPasswordAfter = function(JWTTimestamp) {
+    if (this.passwordChangedAt) {//only if any user model have this field "passwordChangedAt" means then only we will check it is changed before the token given or after
+      //console.log(this.passwordChangedAt, JWTTimestamp)->in format -> 2021-04-18T00:00.000Z 1556804652
+      const changedTimestamp = parseInt(
+        this.passwordChangedAt.getTime() / 1000,
+        10 //base 
+      );
+  
+      return JWTTimestamp < changedTimestamp; //isued at 100 and changed at 200----> 100<200 thus true(yes changed)
+    }
+  
+    // False means NOT changed
+    return false; //isued at 200 and changed at 100----> 200<100 thus false(not changed)
+  };
+  
   
 
 const User = mongoose.model('User' , userSchema); 
