@@ -3,6 +3,7 @@ const { promisify } = require('util'); //rather than taking whole util library w
 const User = require('./../models/userModel');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
+const sendEmail= require('./../utils/email');
 
 //jwt.sign function takes the payload, secret and options as its arguments. The payload can be used to find out which user is the owner of the token. Options can have an expire time until which token is valid.
 //The generated token will be a string.We are then sending the generated token back to the client in the response body. The client should preserve this token for future requests.
@@ -187,7 +188,7 @@ exports.restrictTo = (...roles) => {//Normally we cannot pass in our own argumen
  // ---Very very important---  // Therefore, we need to await the user.save() function. Since we’re skipping over the required fields, we need to pass in { validateBeforeSave: false }.
     await user.save({ validateBeforeSave: false });
   
-    // 3) Send it to user's email
+    // 3) The next step is to send the reset token to the user via email
     const resetURL = `${req.protocol}://${req.get(
       'host'
     )}/api/v1/users/resetPassword/${resetToken}`;
@@ -205,7 +206,8 @@ exports.restrictTo = (...roles) => {//Normally we cannot pass in our own argumen
         status: 'success',
         message: 'Token sent to email!'
       });
-    } catch (err) {
+    } catch (err) {//we here implemented a try catch because if there is an error then we have to
+      //console.log(user.email,resetURL);
       user.passwordResetToken = undefined;
       user.passwordResetExpires = undefined;
       await user.save({ validateBeforeSave: false });
@@ -215,6 +217,10 @@ exports.restrictTo = (...roles) => {//Normally we cannot pass in our own argumen
         500
       );
     }
+  });
+
+  exports.resetPassword = catchAsync(async (req, res, next) => {
+
   });
 
  
