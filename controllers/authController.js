@@ -143,7 +143,7 @@ exports.protect = catchAsync(async(req,res,next) => {
     }
 
     // // 4) Check if user changed password after the token was issued
-    if (currentUser.changedPasswordAfter(decoded.iat)) {//as curruser is model doc so we can use the instance method directly on it
+    if (currentUser.changedPasswordAfter(decoded.iat)) {//as currUser is model doc so we can use the instance method directly on it
         return next(
         new AppError('User recently changed password! Please log in again.', 401)
         );
@@ -154,3 +154,17 @@ exports.protect = catchAsync(async(req,res,next) => {
 
     next();
 });
+
+exports.restrictTo = (...roles) => {//Normally we cannot pass in our own arguments to a middleware function, but in this situation we need to. The solution is to put our arguments in a wrapper function that returns the middleware function.
+    return (req, res, next) => {
+      // roles ['admin', 'lead-guide'].
+      //if  role='user'--:
+      if (!roles.includes(req.user.role)) {// req.user exists because of the authController.protect middleware from earlier.
+        return next(
+          new AppError('You do not have permission to perform this action', 403)//403 : forbidden 
+        );
+      }
+  
+      next();
+    };
+  };

@@ -4,11 +4,11 @@ const bcrypt = require('bcryptjs');
 //name,email,photo,password,passwordConfirm
 
 const userSchema = new mongoose.Schema({
-     name: {
+    name: {
         type: String,
         required: [true, 'Please tell us your name!']
       },
-      email: {
+    email: {
         type: String,
         required: [true, 'Please provide your email'],
         unique: true,
@@ -16,6 +16,29 @@ const userSchema = new mongoose.Schema({
         validate: [validator.isEmail, 'Please provide a valid email']
       },
     photo: String,
+    // role: {
+    //   type: String,
+    //   enum: ['user', 'guide', 'lead-guide', 'admin'],
+      
+    //  // default: 'user'
+    // },
+    role: {
+      type: String,
+      enum: {
+        values: ['user', 'guide', 'lead-guide', 'admin'],
+        message: 'Role must be either user, guide, lead-guide, or admin.'
+       
+      },
+       default: 'user' 
+    },
+  //   difficulty: {
+  //     type: String,
+  //     required: [true, 'A tour must have a difficulty'],
+  //     enum:{
+  //         values: ['easy','medium','difficult'],
+  //         message: 'Difficulty can be only easy,medium or difficulty'
+  //     } 
+  // },
     password: {
         type: String,
         required: [true, 'Please provide a password'],

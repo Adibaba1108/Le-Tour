@@ -37,6 +37,10 @@ router
     .route('/:id')
     .get(tourController.getTour)
     .patch(tourController.updateTour)
-    .delete(tourController.deleteTour);
+    .delete(//we don’t want the average user to have the ability to delete tours. We’ll now create a middleware that restricts certain routes. Restricting our deleteTour route 
+      authController.protect,
+      authController.restrictTo('admin', 'lead-guide'),//admin and a lead-guide can delete a tour
+      tourController.deleteTour
+      );
 
 module.exports = router;
