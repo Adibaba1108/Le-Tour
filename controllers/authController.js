@@ -48,7 +48,8 @@ exports.signup = catchAsync(async (req,res, _next) =>{
         name: req.body.name,
         email: req.body.email,
         password: req.body.password,
-        passwordConfirm: req.body.passwordConfirm
+        passwordConfirm: req.body.passwordConfirm,
+        role:req.body.role
     });
      
     const token = signToken(newUser._id);
@@ -101,7 +102,7 @@ exports.login = catchAsync(async (req, res, next) => {
 
   });
 
-exports.protect = catchAsync(async(req,res,next) => {
+exports.protect = catchAsync(async(req,_res,next) => {
     //Here the acess part is done in 4 steps when the user loged in the system will have to check that it is a valid user then only it will grant user's acees to all the data the user want,like getallTours.
     //Since GET requests have no request body, we have to send the token as an HTTP header.
     //To keep things consistent, the token will remain in the header for all routes. It’s convention to create header called authorization and set it to 'Bearer jsonwebtokenstringgoeshere'
@@ -156,7 +157,7 @@ exports.protect = catchAsync(async(req,res,next) => {
 });
 
 exports.restrictTo = (...roles) => {//Normally we cannot pass in our own arguments to a middleware function, but in this situation we need to. The solution is to put our arguments in a wrapper function that returns the middleware function.
-    return (req, res, next) => {
+    return (req, _res, next) => {
       // roles ['admin', 'lead-guide'].
       //if  role='user'--:
       if (!roles.includes(req.user.role)) {// req.user exists because of the authController.protect middleware from earlier.
@@ -168,3 +169,52 @@ exports.restrictTo = (...roles) => {//Normally we cannot pass in our own argumen
       next();
     };
   };
+
+
+  exports.forgotPassword = catchAsync(async (req, res, next) => { // in short just prompts the user for their email address
+    // 1) Get user based on POSTed email
+    const user = await User.findOne({ email: req.body.email });
+    if (!user) {
+      return next(new AppError('There is no user with email address.', 404));
+    }
+  
+    // 2) Generate the random reset token,it is different from the jwt that every user have...
+    //Here we generate the random reset token, which is like a reset password that the user can use to create a new password
+    // we implement an instance function in userModel(thick model analogy)
+
+    const resetToken = user.createPasswordResetToken();
+    // we updated the user’s data in that above function,but never actually saved that data to the database
+ // ---Very very important---  // Therefore, we need to await the user.save() function. Since we’re skipping over the required fields, we need to pass in { validateBeforeSave: false }.
+    await user.save({ validateBeforeSave: false });
+  
+    // 3) Send it to user's email
+    const resetURL = `${req.protocol}://${req.get(
+      'host'
+    )}/api/v1/users/resetPassword/${resetToken}`;
+  
+    const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: ${resetURL}.\nIf you didn't forget your password, please ignore this email!`;
+  
+    try {
+      await sendEmail({
+        email: user.email,
+        subject: 'Your password reset token (valid for 10 min)',
+        message
+      });
+  
+      res.status(200).json({
+        status: 'success',
+        message: 'Token sent to email!'
+      });
+    } catch (err) {
+      user.passwordResetToken = undefined;
+      user.passwordResetExpires = undefined;
+      await user.save({ validateBeforeSave: false });
+  
+      return next(
+        new AppError('There was an error sending the email. Try again later!'),
+        500
+      );
+    }
+  });
+
+ 

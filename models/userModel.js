@@ -16,12 +16,7 @@ const userSchema = new mongoose.Schema({
         validate: [validator.isEmail, 'Please provide a valid email']
       },
     photo: String,
-    // role: {
-    //   type: String,
-    //   enum: ['user', 'guide', 'lead-guide', 'admin'],
-      
-    //  // default: 'user'
-    // },
+    
     role: {
       type: String,
       enum: {
@@ -31,14 +26,6 @@ const userSchema = new mongoose.Schema({
       },
        default: 'user' 
     },
-  //   difficulty: {
-  //     type: String,
-  //     required: [true, 'A tour must have a difficulty'],
-  //     enum:{
-  //         values: ['easy','medium','difficult'],
-  //         message: 'Difficulty can be only easy,medium or difficulty'
-  //     } 
-  // },
     password: {
         type: String,
         required: [true, 'Please provide a password'],
@@ -55,8 +42,15 @@ const userSchema = new mongoose.Schema({
             },
             meassage: 'Passwprds are not the same!!'
         },
-        passwordChangedAt: Date //only if any user model have this field means then only we will check it is changed before the token given or after
-    }
+        passwordChangedAt: Date ,//only if any user model have this field means then only we will check it is changed before the token given or after
+        passwordResetToken: String,
+        passwordResetExpires: Date,
+        active: {
+          type: Boolean,
+          default: true,
+          select: false
+        }
+      }
 
 });
 //this will refers to the current user
@@ -97,6 +91,25 @@ userSchema.pre('save', async function(next) {
     return false; //isued at 200 and changed at 100----> 200<100 thus false(not changed)
   };
   
+
+  userSchema.methods.createPasswordResetToken = function() {
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    //we’ve used the built-in crypto module since these reset tokens aren’t as big of a security red flag as passwords
+  // first use crypto to create a random 32-byte token
+
+  // we hash it and save it in our database in the passwordResetToken fields
+    this.passwordResetToken = crypto
+      .createHash('sha256')//method used for encryption
+      .update(resetToken)//string that needs to be encrypt
+      .digest('hex');
+  
+    console.log({ resetToken }, this.passwordResetToken);
+  
+    this.passwordResetExpires = Date.now() + 10 * 60 * 1000;//time when this token will expire
+  
+    return resetToken;//we return the unhashed token, which is what we’ll send to the user,
+    //it will be simple non encrypted token..as we will encrypt only those string that has to be stored in our database
+  };
   
 
 const User = mongoose.model('User' , userSchema); 
