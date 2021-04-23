@@ -155,7 +155,7 @@ exports.protect = catchAsync(async(req,_res,next) => {
     req.user = currentUser;
 
     next();
-});
+});  
 
 exports.restrictTo = (...roles) => {//Normally we cannot pass in our own arguments to a middleware function, but in this situation we need to. The solution is to put our arguments in a wrapper function that returns the middleware function.
     return (req, _res, next) => {
@@ -187,7 +187,6 @@ exports.restrictTo = (...roles) => {//Normally we cannot pass in our own argumen
     // we updated the user’s data in that above function,but never actually saved that data to the database
  // ---Very very important---  // Therefore, we need to await the user.save() function. Since we’re skipping over the required fields, we need to pass in { validateBeforeSave: false }.
     await user.save({ validateBeforeSave: false });
-  
     // 3) The next step is to send the reset token to the user via email
     const resetURL = `${req.protocol}://${req.get(
       'host'
@@ -207,8 +206,8 @@ exports.restrictTo = (...roles) => {//Normally we cannot pass in our own argumen
         message: 'Token sent to email!'
       });
     } catch (err) {//we here implemented a try catch because if there is an error then we have to
-      //console.log(user.email,resetURL);
-      user.passwordResetToken = undefined;
+      // console.log(user.email,resetURL);
+      user.passwordResetToken = undefined;//we have to send an error message: we also have to reset the passwordResetToken and passwordResetExpires fields for our user.
       user.passwordResetExpires = undefined;
       await user.save({ validateBeforeSave: false });
   
@@ -220,6 +219,8 @@ exports.restrictTo = (...roles) => {//Normally we cannot pass in our own argumen
   });
 
   exports.resetPassword = catchAsync(async (req, res, next) => {
+
+
 
   });
 
