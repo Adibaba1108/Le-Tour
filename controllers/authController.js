@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const { promisify } = require('util'); //rather than taking whole util library we take only promise via destructuring
 const User = require('./../models/userModel');
@@ -183,7 +184,7 @@ exports.restrictTo = (...roles) => {//Normally we cannot pass in our own argumen
     //Here we generate the random reset token, which is like a reset password that the user can use to create a new password
     // we implement an instance function in userModel(thick model analogy)
 
-    const resetToken = user.createPasswordResetToken();
+    const resetToken = user.createPasswordResetToken();//reset token is the unhashed token
     // we updated the user’s data in that above function,but never actually saved that data to the database
  // ---Very very important---  // Therefore, we need to await the user.save() function. Since we’re skipping over the required fields, we need to pass in { validateBeforeSave: false }.
     await user.save({ validateBeforeSave: false });
@@ -218,10 +219,46 @@ exports.restrictTo = (...roles) => {//Normally we cannot pass in our own argumen
     }
   });
 
-  exports.resetPassword = catchAsync(async (req, res, next) => {
+exports.resetPassword = catchAsync(async (req, res, next) => {
 
+    // 1) Get user based on the token
+    //The unhashed token is a parameter in our URL since we defined it in the router as '/resetPassword/:token
+    
+    // Before comparing it to the hashed token in our database, we need to perform the same hash process using the crypto library
 
+    const hashedToken = crypto 
+    .createHash('sha256')
+    .update(req.params.token)
+    .digest('hex');
+
+    const user = await User.findOne({
+      passwordResetToken: hashedToken,
+      passwordResetExpires: { $gt: Date.now() }//using a Mongo $gt operator to see if the token has expired yet.
+    });
+
+    // 2) If token has not expired, and there is user, set the new password
+    if (!user) {
+      return next(new AppError('Token is invalid or has expired', 400));
+    }
+    user.password = req.body.password;
+    user.passwordConfirm = req.body.passwordConfirm;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save();//Here we have to run save() instead of an update function so that our validators run
+
+    // 3) Update changedPasswordAt property for the user
+
+    //we’ll update the changePasswordAt property for the user. Since we’ll be doing this same update in other handlers,
+    // we’ll go ahead and create a middleware on the user model:
+
+    // 4) Log the user in, send JWT
+    const token = signToken(user._id);
+      
+    res.status(200).json({
+        status: 'success',
+        token,
+    });
 
   });
-
+  
  

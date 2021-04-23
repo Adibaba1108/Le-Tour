@@ -46,11 +46,11 @@ const userSchema = new mongoose.Schema({
         passwordChangedAt: Date ,//only if any user model have this field means then only we will check it is changed before the token given or after
         passwordResetToken: String,
         passwordResetExpires: Date,
-        active: {
-          type: Boolean,
-          default: true,
-          select: false
-        }
+        // active: {
+        //   type: Boolean,
+        //   default: true,
+        //   select: false
+        // }
       }
 
 });
@@ -68,6 +68,14 @@ userSchema.pre('save', async function(next) {
     this.passwordConfirm = undefined;
     next();
   });
+
+//Updating the changePasswordAt property for the user(step 3 in our resetPassword)
+userSchema.pre('save', function(next) {
+  if (!this.isModified('password') || this.isNew) return next();
+
+  this.passwordChangedAt = Date.now() - 1000;
+  next();
+});
 
   //It is an instance method ,that we have created below,it means that it is gonna be available on all the documents of certain collection.
   userSchema.methods.correctPassword = async function(candidatePassword,userPassword) 
@@ -104,7 +112,7 @@ userSchema.pre('save', async function(next) {
       .update(resetToken)//string that needs to be encrypt
       .digest('hex');
   
-    console.log({ resetToken }, this.passwordResetToken);
+    //console.log({ resetToken }, this.passwordResetToken);
   
     this.passwordResetExpires = Date.now() + 10 * 60 * 1000;//time when this token will expire
   
