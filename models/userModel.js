@@ -112,7 +112,7 @@ userSchema.pre('save', function(next) {
       .update(resetToken)//string that needs to be encrypt
       .digest('hex');
   
-    //console.log({ resetToken }, this.passwordResetToken);
+    console.log({ resetToken }, this.passwordResetToken);
   
     this.passwordResetExpires = Date.now() + 10 * 60 * 1000;//time when this token will expire
   

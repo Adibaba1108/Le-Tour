@@ -30,7 +30,7 @@ const signToken = id => {
   
     // Remove password from output
     user.password = undefined;
-  
+    //console.log(user.passwordChangedAt);
     res.status(statusCode).json({
       status: 'success',
       token,
@@ -249,7 +249,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 
   });
 
-  
+
   //implementing some more CRUD (well, UD) methods for our authentication controller.
   exports.updatePassword = catchAsync(async (req, res, next) => {//creating a handler for when the user is already logged in and wants to change their password
     // 1) Get user from collection
