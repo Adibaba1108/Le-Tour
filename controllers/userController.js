@@ -43,6 +43,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
     const filteredBody = filterObj(req.body, 'name', 'email');
   
     // 3) Update user document
+    //As we’re finally done with passwords, we can simply use findByIdAndUpdate()
     const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
       new: true,
       runValidators: true
@@ -55,7 +56,15 @@ exports.updateMe = catchAsync(async (req, res, next) => {
       }
     });
   });
-
+//If logged in user wants to delete his/her account
+  exports.deleteMe = catchAsync(async (req, res, next) => {
+    await User.findByIdAndUpdate(req.user.id, { active: false });
+    console.log(req.user);
+    res.status(204).json({
+      status: 'success',
+      data: null
+    });
+  });
 
 exports.getUser = (req,res)=>{
     res.status(500).json({    //---500 for internal error
@@ -86,3 +95,4 @@ exports.deleteUser = (req,res)=>{
 
     });
 };
+
