@@ -2,8 +2,8 @@
 
 const express = require('express');
 const morgan = require('morgan');
-// const rateLimit = require('express-rate-limit');
-// const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
 // const mongoSanitize = require('express-mongo-sanitize');
 // const xss = require('xss-clean');
 // const hpp = require('hpp');
@@ -19,39 +19,39 @@ const app = express(); //this will add a bunch of method in our app variable.
 //1]--- GLOBAL MIDDLEWARES----
 
 // Set security HTTP headers
-// app.use(helmet());
+app.use(helmet());
 
-// // Development logging
-// if (process.env.NODE_ENV === 'development') {
-//   app.use(morgan('dev'));
-// }
+// Development logging
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
 
-// // Limit requests from same API
-// // It will help prevent DOS attacks and brute force attacks
-// const limiter = rateLimit({
-//     max: 100, 
-//     windowMs: 60 * 60 * 1000, //time window --100 req per hr here--if our app restarted then it will reset the remaining to 100
-//     message: 'Too many requests from this IP, please try again in an hour!'
-//   });
-// app.use('/api', limiter);//we’ll apply it to all the routes that start with /api.
+// Limit requests from same API
+// It will help prevent DOS attacks and brute force attacks
+const limiter = rateLimit({
+    max: 100, 
+    windowMs: 60 * 60 * 1000, //time window --100 req per hr here--if our app restarted then it will reset the remaining to 100
+    message: 'Too many requests from this IP, please try again in an hour!'
+  });
+app.use('/api', limiter);//we’ll apply it to all the routes that start with /api.
 
-// // ---Body parser, reading data from body into req.body---
-// app.use(express.json({ limit: '10kb' }));
+// ---Body parser, reading data from body into req.body---
+app.use(express.json({ limit: '10kb' }));
 
-// // Serving static files
+// Serving static files
 
-// //----Static content is any content that can be delivered to an end user without having to be 
-// //generated, modified, or processed. The server delivers the same file to each user, making static content one of the simplest and most
-// // efficient content types to transmit over the Internet.
-// app.use(express.static(`${__dirname}/public`));
+//----Static content is any content that can be delivered to an end user without having to be 
+//generated, modified, or processed. The server delivers the same file to each user, making static content one of the simplest and most
+// efficient content types to transmit over the Internet.
+app.use(express.static(`${__dirname}/public`));
 
 
-// //----Test middleware----
-// app.use((req,res,next)=>{
-//     req.requestTime = new Date().toISOString();//--just adding time at which request is made and storing it in the inbuilt method of req
-//     //console.log(req.headers);
-//     next();
-// })
+//----Test middleware----
+app.use((req,res,next)=>{
+    req.requestTime = new Date().toISOString();//--just adding time at which request is made and storing it in the inbuilt method of req
+    //console.log(req.headers);
+    next();
+})
 
 
 //---3]ROUTES---
