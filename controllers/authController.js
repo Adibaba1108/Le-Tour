@@ -18,13 +18,18 @@ const signToken = id => {
   
   const createSendToken = (user, statusCode, res) => {
     const token = signToken(user._id);
+    //We’ll now modify this function to store the JWT as a cookie instead of a regular string
+
+    // To define and send a cookie, we simple use res.cookie() and specify the name of the cookie, its value, and an options arguments in an object and pass it in res.cookie
+
     const cookieOptions = {
       expires: new Date(
-        Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+        Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000 //process.env.JWT_COOKIE_EXPIRES_IN, we set a value of 90 since Javascript can’t do math with 90d
       ),
       httpOnly: true
     };
-    if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
+    if (process.env.NODE_ENV === 'production') cookieOptions.secure = true; // we use secure to make sure our cookie only transfers over HTTPS, and then httpOnly to make the cookie inaccessible to the browser (thus protecting us from XSS attacks)
+    //But only if we are in prodciton
   
     res.cookie('jwt', token, cookieOptions);
   
@@ -100,7 +105,7 @@ exports.login = catchAsync(async (req, res, next) => {
 exports.protect = catchAsync(async(req,_res,next) => {
     //Here the acess part is done in 4 steps when the user loged in the system will have to check that it is a valid user then only it will grant user's acees to all the data the user want,like getallTours.
     //Since GET requests have no request body, we have to send the token as an HTTP header.
-    //To keep things consistent, the token will remain in the header for all routes. It’s convention to create header called authorization and set it to 'Bearer jsonwebtokenstringgoeshere'
+    //To keep things consistent, the token will remain in the header for all routes . It’s convention to create header called authorization and set it to 'Bearer jsonwebtokenstringgoeshere'
 
 
     // 1) Getting token and check of it's there
