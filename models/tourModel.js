@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
-const validator = require('validator');
+//const validator = require('validator');
 
 
 //First we will create a schema which will help us to make a model
@@ -83,7 +83,39 @@ const tourSchema = new mongoose.Schema({
     secretTour: {
         type: Boolean,
         default: false
-      }
+    },
+
+    startLocation: {
+        // GeoJSON
+        type: {
+          type: String,
+          default: 'Point',
+          enum: ['Point']
+        },
+        coordinates: [Number],
+        address: String,
+        description: String
+    },
+    locations: [
+        {
+          type: {
+            type: String,
+            default: 'Point',
+            enum: ['Point'] //only point 
+          },
+          coordinates: [Number], //longitude first and then latitude
+          address: String,
+          description: String,
+          day: Number  //day of the tour
+        }
+    ],
+    //To implement child referencing, we’ll update our tour schema in a special way
+    guides: [
+        {
+          type: mongoose.Schema.ObjectId, //expecting a mongoDB ID
+          ref: 'User'
+        }
+    ]
 
 },
 {
@@ -122,6 +154,15 @@ tourSchema.pre(/^find/, function(next) {//The difference is that the hook is now
     this.find({ secretTour: { $ne: true } });//this points to the current query, to which we’re chaining another find() method before its execution. 
   //simply shows only those tours publicly which have secret tour ->false
     this.start = Date.now();
+    next();
+  });
+
+tourSchema.pre(/^find/, function(next) {
+    this.populate({
+      path: 'guides',
+      select: '-__v -passwordChangedAt'
+    });
+  
     next();
   });
   
