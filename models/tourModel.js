@@ -110,11 +110,12 @@ const tourSchema = new mongoose.Schema({
         }
     ],
     //To implement child referencing, we’ll update our tour schema in a special way
+   
     guides: [
-        {
-          type: mongoose.Schema.ObjectId, //expecting a mongoDB ID
-          ref: 'User'
-        }
+      {
+        type: mongoose.Schema.ObjectId,//expecting a mongoDB ID
+        ref: 'User'
+      }
     ]
 
 },
@@ -137,6 +138,7 @@ tourSchema.virtual('durationWeeks').get(function(){
 //We can define functions in Mongoose to run before or after certain events,
 // like saving a new document.
 
+//--------------//-----------//----------------
 //Document Middleware: ****runs before .save() and .create()****
 //(can actually work for remove and validate also)
 
@@ -160,7 +162,7 @@ tourSchema.pre(/^find/, function(next) {//The difference is that the hook is now
 tourSchema.pre(/^find/, function(next) {
     this.populate({
       path: 'guides',
-      select: '-__v -passwordChangedAt'
+      select: '-__v -passwordChangedAt'//we probably have some fields, like passwordChangedAt
     });
   
     next();

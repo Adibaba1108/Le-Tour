@@ -12,6 +12,7 @@ const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController')
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
+const reviewRouter = require('./routes/reviewRoutes');
 
 const app = express(); //this will add a bunch of method in our app variable.
 
@@ -81,6 +82,7 @@ app.use((req,res,next)=>{
 ///---Mounting the routers---- via Using middlewares---///
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/reviews', reviewRouter);
 
 //--middleware for handling unhandled routes--//
 app.all( '*' ,(req,res,next) => {//The all() method encompasses all types of requests, including GET and PATCH, 
