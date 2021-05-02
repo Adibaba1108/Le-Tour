@@ -1,7 +1,7 @@
 //Importing our Tour model
 const Tour = require('./../models/tourModel');
 const catchAsync = require('./../utils/catchAsync');
-const APIFeatures = require('./../utils/apiFeatures');
+// const APIFeatures = require('./../utils/apiFeatures');
 const factory = require('./handlerFactory');
 const AppError = require('./../utils/appError');
 
@@ -15,27 +15,32 @@ exports.aliasTopTours = (req, res, next) => {
   };
 
 //---A get request---it is a handler function for our url to get all the tour
-exports.getAllTours = catchAsync(async (req, res, next) => {//catchAysnc return a function, and then that function will be assigned to createTour.
-  //here all this is the funtion fn that we are passing as the argument to the catchAsyc fun
-  //that function since async/await type will return a promise,and if it catches an error it will pass it to the globalhandling middleware  
-//****passed next as an argument so that, when an error is caught, this function can proceed through the error handling middleware
-  const features = new APIFeatures(Tour.find(), req.query)//creating an instance of APIFeatures class passing in the constructor (query obj,query string(coming from express))
-  .filter()
-  .sort()
-  .limitFields()
-  .paginate();
-const tours = await features.query;
 
-  //SEND RESPONSE
+
+exports.getAllTours = factory.getAll(Tour);
+
+// exports.getAllTours = catchAsync(async (req, res, next) => {//catchAysnc return a function, and then that function will be assigned to createTour.
+//   //here all this is the funtion fn that we are passing as the argument to the catchAsyc fun
+//   //that function since async/await type will return a promise,and if it catches an error it will pass it to the globalhandling middleware  
+// //****passed next as an argument so that, when an error is caught, this function can proceed through the error handling middleware
+//   const features = new APIFeatures(Tour.find(), req.query)//creating an instance of APIFeatures class passing in the constructor (query obj,query string(coming from express))
+//   .filter()
+//   .sort()
+//   .limitFields()
+//   .paginate();
+// const tours = await features.query;
+
+//   //SEND RESPONSE
  
-  res.status(200).json({
-     status : 'success',
-     results : tours.length,
-     data: {
-         tours : tours, //--tours on the LHS will be same as the endpoint and RHS will be same as the variable that has the json object of the file details.
-     }
-    });
-  });
+//   res.status(200).json({
+//      status : 'success',
+//      results : tours.length,
+//      data: {
+//          tours : tours, //--tours on the LHS will be same as the endpoint and RHS will be same as the variable that has the json object of the file details.
+//      }
+//     });
+//   });
+//even before that---
     // try{
 
     //     const features = new APIFeatures(Tour.find(), req.query)//creating an instance of APIFeatures class passing in the constructor (query obj,query string(coming from express))
@@ -63,66 +68,70 @@ const tours = await features.query;
     
 //};
 
-exports.getTour = catchAsync(async (req, res, next) =>{
-      //returns «Query»
-      const tour =  await Tour.findById(req.params.id).populate('reviews');
-      //Tour.findOne({_id : req.params.id})//above command can be written like this but mongoose provide us an easier method.
-      if (!tour) {//if we pass in a valid Mongo ID that happens not to exist in our database, we get a response with tour set to null
-        return next(new AppError('No tour found with that ID', 404));
-      }
+//facotry handler and adding populate argument also
+exports.getTour = factory.getOne(Tour, { path: 'reviews' });
+
+// exports.getTour = catchAsync(async (req, res, next) =>{
+//       //returns «Query»
+//       const tour =  await Tour.findById(req.params.id).populate('reviews');
+//       //Tour.findOne({_id : req.params.id})//above command can be written like this but mongoose provide us an easier method.
+//       if (!tour) {//if we pass in a valid Mongo ID that happens not to exist in our database, we get a response with tour set to null
+//         return next(new AppError('No tour found with that ID', 404));
+//       }
     
-      res.status(200).json({
-        status: 'success',
-        data: {
-          tour
-        }
-      });
-    });
+//       res.status(200).json({
+//         status: 'success',
+//         data: {
+//           tour
+//         }
+//       });
+//     });
 
+exports.createTour = factory.createOne(Tour);
 
-
-exports.createTour = catchAsync(async (req, res, next) => {
+// exports.createTour = catchAsync(async (req, res, next) => {
     
-    //Old method to create documents
-    //const newTour = new Tour({})
-    //newTour.save
-    //save method here is available on all the instances created through a model ,i.e on all doc,Not on the model itself!!
-    //mean Tour.save will give error but newTour which is an instance of the Tour,will have save method,because save is a part of the prototype object of this class
+//     //Old method to create documents
+//     //const newTour = new Tour({})
+//     //newTour.save
+//     //save method here is available on all the instances created through a model ,i.e on all doc,Not on the model itself!!
+//     //mean Tour.save will give error but newTour which is an instance of the Tour,will have save method,because save is a part of the prototype object of this class
 
 
-    //We imported Tour model from the tourModel file and then created a new doc with it's help
-    //and named it newTour
-    const newTour = await Tour.create(req.body);//Using async await becaute this Tour.create returns a promise -> //Mongoose queries are not promises. They have a .then() function for co and async/await as a convenience. However, unlike promises, calling a query's .then() can execute the query multiple times.
+//     //We imported Tour model from the tourModel file and then created a new doc with it's help
+//     //and named it newTour
+//     const newTour = await Tour.create(req.body);//Using async await becaute this Tour.create returns a promise -> //Mongoose queries are not promises. They have a .then() function for co and async/await as a convenience. However, unlike promises, calling a query's .then() can execute the query multiple times.
     
-    res.status(201).json({
-        status : 'success',
-        data : {
-            tour : newTour
-        }
-    });
+//     res.status(201).json({
+//         status : 'success',
+//         data : {
+//             tour : newTour
+//         }
+//     });
   
-});
+// });
 
+exports.updateTour = factory.updateOne(Tour); //---factory handler for updating tour
 
-exports.updateTour = catchAsync(async (req, res, next) => {
+// exports.updateTour = catchAsync(async (req, res, next) => {
 
-    //returns «Query»
-      const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
-      new: true, //return the modified doc rather than the original
-      runValidators: true //when we update our doc,then because of setting it true the validators we set in the schema will run again.
-    });
-    if (!tour) {
-      return next(new AppError('No tour found with that ID', 404));
-    }
+//     //returns «Query»
+//       const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
+//       new: true, //return the modified doc rather than the original
+//       runValidators: true //when we update our doc,then because of setting it true the validators we set in the schema will run again.
+//     });
+//     if (!tour) {
+//       return next(new AppError('No tour found with that ID', 404));
+//     }
   
-    res.status(200).json({
-      status: 'success',
-      data: {
-        tour //tour:tour ,but can be written like this if property name has the same name of the value.
-      }
-    });
+//     res.status(200).json({
+//       status: 'success',
+//       data: {
+//         tour //tour:tour ,but can be written like this if property name has the same name of the value.
+//       }
+//     });
     
-});
+// });
 
 
 exports.deleteTour = factory.deleteOne(Tour); //we’ll make a new handler called deleteOne() in handlerFactory that takes Model as an argument and returns a generic version of deleteTour

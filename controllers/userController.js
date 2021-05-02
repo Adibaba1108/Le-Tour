@@ -13,20 +13,10 @@ const filterObj = (obj, ...allowedFields) => {
 };
 ///-------Route Handlers for users---
 
-exports.getAllUsers = catchAsync(async (req, res, next) => {
-    const users = await User.find();
-  
-    // SEND RESPONSE
-    res.status(200).json({
-      status: 'success',
-      results: users.length,
-      data: {
-        users
-      }
-    });
-  });
-
-
+exports.getMe = (req, res, next) => {//current user can get his/her information if logged in!!
+  req.params.id = req.user.id;
+  next();
+};
 
 // create a handler that allows the user to update their email and/or name.(but not rest like password or role)
 exports.updateMe = catchAsync(async (req, res, next) => {
@@ -57,46 +47,33 @@ exports.updateMe = catchAsync(async (req, res, next) => {
       }
     });
   });
+
 //If logged in user wants to delete his/her account
-  exports.deleteMe = catchAsync(async (req, res, next) => {
-    await User.findByIdAndUpdate(req.user.id, { active: false });
-    console.log(req.user);
-    res.status(204).json({
-      status: 'success',
-      data: null
-    });
+exports.deleteMe = catchAsync(async (req, res, next) => {
+  await User.findByIdAndUpdate(req.user.id, { active: false });
+  console.log(req.user);
+  res.status(204).json({
+    status: 'success',
+    data: null
   });
+});
 
-exports.getUser = (req,res)=>{
-    res.status(500).json({    //---500 for internal error
-        status:"error",
-        message : "This route is not yet defined!"
 
-    });
-};
-exports.createUser = (req,res)=>{
-    res.status(500).json({    //---500 for internal error
-        status:"error",
-        message : "This route is not yet defined!"
-
-    });
-};
-exports.updateUser = (req,res)=>{
-    res.status(500).json({    //---500 for internal error
-        status:"error",
-        message : "This route is not yet defined!"
-
-    });
+exports.createUser = (req, res) => {
+  res.status(500).json({
+    status: 'error',
+    message: 'This route is not defined! Please use /signup instead'
+  });
 };
 
 
+//factory handler for user
 
+exports.getAllUsers = factory.getAll(User);
+exports.getUser = factory.getOne(User);
+// Do NOT update passwords with this! as this route is only for admins
+exports.updateUser = factory.updateOne(User);
 exports.deleteUser = factory.deleteOne(User); //can be don by admin only
-// exports.deleteUser = (req,res)=>{
-//     res.status(500).json({    //---500 for internal error
-//         status:"error",
-//         message : "This route is not yet defined!"
 
-//     });
-// };
+
 
