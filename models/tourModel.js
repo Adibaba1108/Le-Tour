@@ -135,6 +135,17 @@ tourSchema.virtual('durationWeeks').get(function(){
 // We don’t want that; we want this to point to the document in question when the function is called.
 //This is done here not in the controllers as the schema has to follow MVC architecture and keep business logic as much in the model as possible.
 
+//---- Virtual populate------to get info about reviews when searching a tour,as it is done via parent ref.,thus tour(parent) does not have any info abot (reviews)
+//This feature will allow us to populate the tour with reviews without actually persisting an array of review IDs on the tour document. We begin by writing this method onto our tour model:
+
+tourSchema.virtual('reviews', {
+  ref: 'Review',//ref is the name of the model we want to reference
+  foreignField: 'tour', //foreignField is the name of the field in the Review model that contains the reference to the current model (the tour model).
+  localField: '_id' //localField is the name of the field where the ID is stored on the current model.
+});
+
+
+
 //We can define functions in Mongoose to run before or after certain events,
 // like saving a new document.
 

@@ -2,6 +2,7 @@
 const Tour = require('./../models/tourModel');
 const catchAsync = require('./../utils/catchAsync');
 const APIFeatures = require('./../utils/apiFeatures');
+const factory = require('./handlerFactory');
 const AppError = require('./../utils/appError');
 
 //2]--ROUTE HANDLERS--
@@ -64,7 +65,7 @@ const tours = await features.query;
 
 exports.getTour = catchAsync(async (req, res, next) =>{
       //returns «Query»
-      const tour = await Tour.findById(req.params.id);
+      const tour =  await Tour.findById(req.params.id).populate('reviews');
       //Tour.findOne({_id : req.params.id})//above command can be written like this but mongoose provide us an easier method.
       if (!tour) {//if we pass in a valid Mongo ID that happens not to exist in our database, we get a response with tour set to null
         return next(new AppError('No tour found with that ID', 404));
@@ -123,19 +124,22 @@ exports.updateTour = catchAsync(async (req, res, next) => {
     
 });
 
-exports.deleteTour = catchAsync(async (req, res, next) =>  {
-  
-  const tour = await Tour.findByIdAndDelete(req.params.id);
 
-  if (!tour) {
-    return next(new AppError('No tour found with that ID', 404));
-  }
+exports.deleteTour = factory.deleteOne(Tour); //we’ll make a new handler called deleteOne() in handlerFactory that takes Model as an argument and returns a generic version of deleteTour
+
+// exports.deleteTour = catchAsync(async (req, res, next) =>  {
+  
+//   const tour = await Tour.findByIdAndDelete(req.params.id);
+
+//   if (!tour) {
+//     return next(new AppError('No tour found with that ID', 404));
+//   }
     
-    res.status(204).json({
-      status:"success",
-      data : null //data is null as that tour is deleted
-  });  
-});
+//     res.status(204).json({
+//       status:"success",
+//       data : null //data is null as that tour is deleted
+//   });  
+// });
 
 //The Aggregation Pipeline-:Aggregation of a Mongo database 
 //encompasses statistics like averages, sums, minimums, and maximums. 

@@ -1,6 +1,7 @@
 const User = require('./../models/userModel');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
+const factory = require('./handlerFactory');
 
 //filtering from the object user send to change and selecting only allowedFields frm them storing it in the newObj and then returning that object. 
 const filterObj = (obj, ...allowedFields) => {
@@ -88,11 +89,14 @@ exports.updateUser = (req,res)=>{
     });
 };
 
-exports.deleteUser = (req,res)=>{
-    res.status(500).json({    //---500 for internal error
-        status:"error",
-        message : "This route is not yet defined!"
 
-    });
-};
+
+exports.deleteUser = factory.deleteOne(User); //can be don by admin only
+// exports.deleteUser = (req,res)=>{
+//     res.status(500).json({    //---500 for internal error
+//         status:"error",
+//         message : "This route is not yet defined!"
+
+//     });
+// };
 

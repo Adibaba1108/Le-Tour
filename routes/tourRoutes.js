@@ -3,8 +3,17 @@ const express = require('express');
 const router = express.Router();
 const tourController = require('./../controllers/tourController');
 const authController = require('./../controllers/authController');
+const reviewRouter = require('./../routes/reviewRoutes');
 
 //router.param('id', tourController.checkID);
+
+
+// POST /tour/234fad4/reviews
+// GET /tour/234fad4/reviews
+
+router.use('/:tourId/reviews', reviewRouter); //just mounting reviewRouter when this url comes it's same as we didi in the beginning in the app.js file
+//but reviewRouter does not have access to the tour id parameter!!!--so we got to review router and apply merge params
+
 
 router
   .route('/top-5-cheap')
