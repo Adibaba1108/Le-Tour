@@ -8,42 +8,41 @@ const router = express.Router();
 //We’ve made a separate endpoint for sign-ups because we’d never GET or PATCH data for a sign-up.
 //It doesn’t really fit into REST architecture.
 router.post('/signup',authController.signup);
-
 router.post('/login', authController.login);
-
-
 router.post('/forgotPassword', authController.forgotPassword);
 router.patch('/resetPassword/:token', authController.resetPassword);
 
 
+// Protect all routes after this middleware
+router.use(authController.protect);
+
 router.patch(
     '/updateMyPassword',
-    authController.protect,
     authController.updatePassword
 );
 router.get(
     '/me', 
-    authController.protect,
     userController.getMe, 
     userController.getUser//from factory function get user
 );
 
 router.patch(
       '/updateMe',
-       authController.protect,
-        userController.updateMe
+       userController.updateMe
 );
 
 router.delete(
     '/deleteMe',
-    authController.protect, 
     userController.deleteMe
 );
+
+//All routes below can only be access by an admin!!
+router.use(authController.restrictTo('admin'));
 
 router
     .route('/')
     .get(userController.getAllUsers)
-    .post(userController.createUser);
+    .post(userController.createUser);//not created pls use signup
 
 router
     .route('/:id')
