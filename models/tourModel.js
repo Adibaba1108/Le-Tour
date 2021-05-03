@@ -123,6 +123,16 @@ const tourSchema = new mongoose.Schema({
     toJSON: { virtuals : true},
     toObject: { virtuals : true}
 });
+//An index in MongoDB is a special data structure that holds the data of few fields of documents on which the index is created.
+//Indexes improve the speed of search operations in database because instead of searching the whole document, the search is performed on the indexes that holds only few fields
+//read more on https://docs.mongodb.com/manual/indexes/
+// tourSchema.index({ price: 1 });
+// 1 signifies ascending order, while -1 would be descending.
+tourSchema.index({ price: 1, ratingsAverage: -1 });//compound index
+tourSchema.index({ slug: 1 });
+tourSchema.index({ startLocation: '2dsphere' });
+
+
 //Virtual properties are fields on a document that will not be stored in the database
 //we’ll create a durationWeeks property derived from our duration (in days) property
 

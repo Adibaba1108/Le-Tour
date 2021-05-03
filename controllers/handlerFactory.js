@@ -79,7 +79,7 @@ exports.createOne = Model =>
       .sort()
       .limitFields()
       .paginate();
-    // const doc = await features.query.explain();
+    // const doc = await features.query.explain(); //We can see information about our requests by chaining an explain() method on our query
     const doc = await features.query;
 
     // SEND RESPONSE
