@@ -52,6 +52,8 @@ reviewSchema.pre(/^find/, function(next) {
 });
 
 
+reviewSchema.index({ tour: 1, user: 1 }, { unique: true });
+
 reviewSchema.statics.calcAverageRatings = async function(tourId) {
   const stats = await this.aggregate([//"this" points to the current model in static method and we want to call aggerate directly on model thus static is used
     //forming aggregate pipeline
