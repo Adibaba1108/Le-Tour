@@ -131,6 +131,7 @@ const tourSchema = new mongoose.Schema({
 // 1 signifies ascending order, while -1 would be descending.
 tourSchema.index({ price: 1, ratingsAverage: -1 });//compound index
 tourSchema.index({ slug: 1 });
+//for geospatial
 tourSchema.index({ startLocation: '2dsphere' });
 
 
@@ -200,13 +201,13 @@ tourSchema.post(/^find/, function(docs, next) {
   //Let’s say we also wanted to exclude our secret tour from any of our aggregations.
   // Rater than add a new $match stage to each of our aggregations, we’ll add this middleware
 
-  tourSchema.pre('aggregate', function(next) {
+  // tourSchema.pre('aggregate', function(next) {
     
-    this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });//we are adding one more filter here in terms of secret tour,
-    //we are using unshift as we have to insert in the begining of the array
-    next();
+  //   this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });//we are adding one more filter here in terms of secret tour,
+  //   //we are using unshift as we have to insert in the begining of the array
+  //   next();
 
-  });
+  // });
  // Now the secret tour is excluded from all of our aggregations.
 
 
