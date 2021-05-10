@@ -1,5 +1,5 @@
 //---Everything related to express and the middleware /////
-
+const path = require('path');
 const express = require('express');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
@@ -16,7 +16,19 @@ const reviewRouter = require('./routes/reviewRoutes');
 
 const app = express(); //this will add a bunch of method in our app variable.
 
+/////------------ “view” in “view engine” is V in MVC,-------/////
+
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views'));//Join all arguments together and normalize the resulting path. Arguments must be strings. In v0.8, non-string arguments were silently ignored. In v0.10 and up, an exception is thrown.
+
 //1]--- GLOBAL MIDDLEWARES----
+// Serving static files
+
+//----Static content is any content that can be delivered to an end user without having to be 
+//generated, modified, or processed. The server delivers the same file to each user, making static content one of the simplest and most
+// efficient content types to transmit over the Internet.
+
+app.use(express.static(path.join(__dirname, 'public')));//used to served the static code present in public code like css,img,etc
 
 // Set security HTTP headers
 app.use(helmet());
@@ -60,14 +72,6 @@ app.use(
     })
   );
 
-// Serving static files
-
-//----Static content is any content that can be delivered to an end user without having to be 
-//generated, modified, or processed. The server delivers the same file to each user, making static content one of the simplest and most
-// efficient content types to transmit over the Internet.
-app.use(express.static(`${__dirname}/public`));
-
-
 //----Test middleware----
 app.use((req,res,next)=>{
     req.requestTime = new Date().toISOString();//--just adding time at which request is made and storing it in the inbuilt method of req
@@ -80,6 +84,7 @@ app.use((req,res,next)=>{
 
 
 ///---Mounting the routers---- via Using middlewares---///
+
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);
