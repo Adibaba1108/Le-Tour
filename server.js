@@ -25,6 +25,7 @@ const DB = process.env.DATABASE.replace(
 // deprecation warnings.//This connect method will return a promise
 mongoose
   .connect(DB, {
+    useUnifiedTopology: true,
     useNewUrlParser: true,
     useCreateIndex: true,
     useFindAndModify: false

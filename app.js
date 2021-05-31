@@ -7,6 +7,7 @@ const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
+const cookieParser = require('cookie-parser');
 
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController')
@@ -33,7 +34,7 @@ app.set('views', path.join(__dirname, 'views'));//Join all arguments together an
 app.use(express.static(path.join(__dirname, 'public')));//used to served the static code present in public code like css,img,etc
 
 // Set security HTTP headers
-app.use(helmet());
+app.use(helmet({ contentSecurityPolicy: false }));
 
 // Development logging
 if (process.env.NODE_ENV === 'development') {
@@ -50,7 +51,9 @@ const limiter = rateLimit({
 app.use('/api', limiter);//we’ll apply it to all the routes that start with /api.
 
 // ---Body parser, reading data from body into req.body---
-app.use(express.json({ limit: '10kb' }));
+app.use(express.json({ limit: '10kb' })); //Parses the data from body
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+app.use(cookieParser()); //Parses data from the cookies
 
 // Data sanitization against NoSQL query injection
 app.use(mongoSanitize()); // This will get rid of any input that looks like a Mongo query,like gt
@@ -77,7 +80,7 @@ app.use(
 //----Test middleware----
 app.use((req,res,next)=>{
     req.requestTime = new Date().toISOString();//--just adding time at which request is made and storing it in the inbuilt method of req
-    //console.log(req.headers);
+    //console.log(req.cookies);
     next();
 })
 

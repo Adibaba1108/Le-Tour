@@ -11,7 +11,7 @@ const reviewRouter = require('./../routes/reviewRoutes');
 // POST /tour/234fad4/reviews
 // GET /tour/234fad4/reviews
 
-router.use('/:tourId/reviews', reviewRouter); //just mounting reviewRouter when this url comes it's same as we didi in the beginning in the app.js file
+router.use('/:tourId/reviews', reviewRouter); //just mounting reviewRouter when this url comes it's same as we did in the beginning in the app.js file
 //but reviewRouter does not have access to the tour id parameter!!!--so we got to review router and apply merge params
 
 
@@ -28,7 +28,7 @@ router
     tourController.getMonthlyPlan
   );
 
-//---geospatial--
+//---geospatial---
   router
   .route('/tours-within/:distance/center/:latlng/unit/:unit')
   .get(tourController.getToursWithin);

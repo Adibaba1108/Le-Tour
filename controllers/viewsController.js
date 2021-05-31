@@ -41,16 +41,17 @@ exports.getLoginForm = (req, res) => {
   });
 };
 exports.getSingupForm = (req, res) => {
-    res.status(200).render('signup', {
-      title: 'create your account!'
-    });
-  };
+  res.status(200).render('signup', {
+    title: 'create your account!'
+  });
+};
 
-// exports.getAccount = (req, res) => {
-//   res.status(200).render('account', {
-//     title: 'Your account'
-//   });
-// };
+exports.getAccount = (req, res) => {
+  res.status(200).render('account', {
+    title: 'Your account'
+  });
+};
+//--It is been handled with the help of api---
 
 // exports.updateUserData = catchAsync(async (req, res, next) => {
 //   const updatedUser = await User.findByIdAndUpdate(
