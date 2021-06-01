@@ -1,7 +1,38 @@
+const multer = require('multer');
 const User = require('./../models/userModel');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
 const factory = require('./handlerFactory');
+
+
+//The diskStorage method uses functions with callbacks to set destinations and filenames.
+// const multerStorage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//     cb(null, 'public/img/users');  //The first argument in cb is the error, which we’ve set to null in this case
+//   },
+//   filename: (req, file, cb) => {
+//     const ext = file.mimetype.split('/')[1]; // To append the file extension, we extract everything after the slash in the MIME type (which looks like 'image/jpeg').
+//     cb(null, `user-${req.user.id}-${Date.now()}.${ext}`); //To create a filename, we use the user ID and the current timestamp
+//   }
+// });
+const multerStorage = multer.memoryStorage();
+
+// It is a simple filter to check if the file is actually an image. MIME types make this easy:
+const multerFilter = (req, file, cb) => { //accesing a req,file and a callback function
+  //goal is simply to check an uploaded file should be an image ,as we do not want files which are not images.
+  if (file.mimetype.startsWith('image')) {//will be true for all type of images jpeg,png,etc.
+    cb(null, true);
+  } else {
+    cb(new AppError('Not an image! Please upload only images.', 400), false);
+  }
+};
+//We’ll combine the storage specification and filter into a new multer object and then export it as a middleware:
+const upload = multer({
+  storage: multerStorage, //described above
+  fileFilter: multerFilter //described above
+});
+
+exports.uploadUserPhoto = upload.single('photo'); //single as 1 photo and  the 'photo' argument tells multer where on the request body to find the file
 
 //filtering from the object user send to change and selecting only allowedFields frm them storing it in the newObj and then returning that object. 
 const filterObj = (obj, ...allowedFields) => {
@@ -32,7 +63,10 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   
     // 2) Filtered out unwanted fields names that are not allowed to be updated
     const filteredBody = filterObj(req.body, 'name', 'email');
-  
+    
+    //------The last step is to make sure the new file name gets persisted in our database. We’ll do this by checking if the request has a file and, if so, adding it to the request object:
+    if (req.file) filteredBody.photo = req.file.filename;
+
     // 3) Update user document
     //As we’re finally done with passwords, we can simply use findByIdAndUpdate()
     const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
