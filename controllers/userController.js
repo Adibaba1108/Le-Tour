@@ -34,6 +34,20 @@ const upload = multer({
 
 exports.uploadUserPhoto = upload.single('photo'); //single as 1 photo and  the 'photo' argument tells multer where on the request body to find the file
 
+exports.resizeUserPhoto = catchAsync(async (req, res, next) => {
+  if (!req.file) return next();
+
+  req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
+
+  await sharp(req.file.buffer)
+    .resize(500, 500)
+    .toFormat('jpeg')
+    .jpeg({ quality: 90 })
+    .toFile(`public/img/users/${req.file.filename}`);
+
+  next();
+});
+
 //filtering from the object user send to change and selecting only allowedFields frm them storing it in the newObj and then returning that object. 
 const filterObj = (obj, ...allowedFields) => {
   const newObj = {};
