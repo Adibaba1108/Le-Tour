@@ -1,4 +1,5 @@
 const multer = require('multer');
+const sharp = require('sharp');
 const User = require('./../models/userModel');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
@@ -15,6 +16,9 @@ const factory = require('./handlerFactory');
 //     cb(null, `user-${req.user.id}-${Date.now()}.${ext}`); //To create a filename, we use the user ID and the current timestamp
 //   }
 // });
+
+//We don’t want to write the image to the disk just to immediately read it again in our image resizing middleware.
+//Instead, we’ll store the image in memory, which will make it available on req.file.buffer.(ie available on buffer)
 const multerStorage = multer.memoryStorage();
 
 // It is a simple filter to check if the file is actually an image. MIME types make this easy:
@@ -35,15 +39,15 @@ const upload = multer({
 exports.uploadUserPhoto = upload.single('photo'); //single as 1 photo and  the 'photo' argument tells multer where on the request body to find the file
 
 exports.resizeUserPhoto = catchAsync(async (req, res, next) => {
-  if (!req.file) return next();
+  if (!req.file) return next(); //if img file is not present
 
   req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
 
-  await sharp(req.file.buffer)
+  await sharp(req.file.buffer) //reading file from memory,stored in buffer
     .resize(500, 500)
     .toFormat('jpeg')
     .jpeg({ quality: 90 })
-    .toFile(`public/img/users/${req.file.filename}`);
+    .toFile(`public/img/users/${req.file.filename}`); //writing the file in the dest path
 
   next();
 });

@@ -1,3 +1,5 @@
+const multer = require('multer');
+const sharp = require('sharp');
 //Importing our Tour model
 const Tour = require('./../models/tourModel');
 const catchAsync = require('./../utils/catchAsync');
