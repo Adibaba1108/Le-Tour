@@ -1,4 +1,6 @@
 const nodemailer = require('nodemailer');
+const pug = require('pug');
+const htmlToText = require('html-to-text');
 
 const sendEmail = async options => {
  //1) Create a transporter->service that will send the emails
