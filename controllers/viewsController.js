@@ -1,5 +1,6 @@
 const Tour = require('../models/tourModel');
 const User = require('../models/userModel');
+const Booking = require('../models/bookingModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 
@@ -51,6 +52,23 @@ exports.getAccount = (req, res) => {
     title: 'Your account'
   });
 };
+
+exports.getMyTours = catchAsync(async (req, res, next) => {
+  // 1) Find all bookings
+  const bookings = await Booking.find({ user: req.user.id });//this will return all the tours that belongs to the current user
+
+  // 2) Find tours with the returned IDs
+  const tourIDs = bookings.map(el => el.tour); //loops through entire booking array and on each elemetn it will grab the el.tour
+  const tours = await Tour.find({ _id: { $in: tourIDs } });//selecting tour with id which is "$in" tourId array.
+ //again tours ready to render..instead of sending all tours just send booked tours and use same template as above used in tours
+  res.status(200).render('overview', {
+    title: 'My Tours',
+    tours
+  });
+});
+
+
+
 //--It is been handled with the help of api---
 
 // exports.updateUserData = catchAsync(async (req, res, next) => {
