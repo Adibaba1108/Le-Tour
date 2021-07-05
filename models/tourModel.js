@@ -212,6 +212,6 @@ tourSchema.post(/^find/, function(docs, next) {
 
 
 
-const Tour = mongoose.model('Tour' , tourSchema); 
+const Tour = mongoose.model('Tour' , tourSchema); //name of the model ,schema
 
 module.exports = Tour;

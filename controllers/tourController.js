@@ -9,7 +9,7 @@ const AppError = require('./../utils/appError');
 
 //2]--ROUTE HANDLERS--
 //A middleware which will run and here we are filling the value of limit sort and field according to the need from starting.
-exports.aliasTopTours = (req, res, next) => {
+exports.aliasTopTours = (req, res, next) => {//give us top 5 and cheapest tour
     req.query.limit = '5';
     req.query.sort = '-ratingsAverage,price';
     req.query.fields = 'name,price,ratingsAverage,summary,difficulty';
@@ -102,7 +102,8 @@ exports.createTour = factory.createOne(Tour);
 
 //     //We imported Tour model from the tourModel file and then created a new doc with it's help
 //     //and named it newTour
-//     const newTour = await Tour.create(req.body);//Using async await becaute this Tour.create returns a promise -> //Mongoose queries are not promises. They have a .then() function for co and async/await as a convenience. However, unlike promises, calling a query's .then() can execute the query multiple times.
+//     const newTour = await Tour.create(req.body);//Using async await becaute this Tour.create returns a promise -> //Mongoose queries are not promises. They have a .then() function for co and async/await as a convenience.
+// However, unlike promises, calling a query's .then() can execute the query multiple times.
     
 //     res.status(201).json({
 //         status : 'success',
@@ -195,6 +196,8 @@ exports.getTourStats = async (req, res) => {
       });
     }
   };
+
+//client wants to make a monthly plan that outlines which tours start in which month
 //the startDates field is an array,we have the option to create a new document
 // for each individual start date by using an $unwind stage
   exports.getMonthlyPlan = async (req, res) => {
