@@ -119,5 +119,3 @@ eslint-plugin-import eslint-plugin-jsx-a11y  eslint-plugin-react --save-dev
 * Improve overall UX/UI and fix bugs
 * Featured Tours
 * Recently Viewed Tours
-
-Copyright © 2021 Aditya Gupta
