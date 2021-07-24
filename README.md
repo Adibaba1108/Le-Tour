@@ -23,10 +23,6 @@
   <a href="#acknowledgement">Acknowledgement</a>
 </p>
 
-## Deployed Version
-Live demo (Feel free to visit) 👉 : https://lakshman-natours.herokuapp.com/
-
-
 ## Key Features
 
 * Authentication and Authorization
