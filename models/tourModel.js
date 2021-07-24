@@ -4,7 +4,7 @@ const slugify = require('slugify');
 
 
 //First we will create a schema which will help us to make a model
-// new  mongoose.Schema will specify a chema for our data
+// new  mongoose.Schema will specify a schema for our data
 const tourSchema = new mongoose.Schema({
     name : {
         type: String,
@@ -85,19 +85,19 @@ const tourSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-
+    //Our 5th dataset Location embedded in tour
     startLocation: {
         // GeoJSON
         type: {
           type: String,
-          default: 'Point',
-          enum: ['Point']
+          default: 'Point', 
+          enum: ['Point'] 
         },
-        coordinates: [Number],
+        coordinates: [Number],//It wil store longitude and latitude way
         address: String,
         description: String
     },
-    locations: [
+    locations: [//It is an array of object,each object will have all the properties written below plus start location written above...and stored as an array of object embeded in tour document.
         {
           type: {
             type: String,
@@ -112,15 +112,16 @@ const tourSchema = new mongoose.Schema({
     ],
     //To implement child referencing, we’ll update our tour schema in a special way
    
-    guides: [
+    guides: [//array of object
       {
         type: mongoose.Schema.ObjectId,//expecting a mongoDB ID
-        ref: 'User'
+        ref: 'User'//Child referencing
       }
     ]
 
 },
-{
+{  //object for the schema options
+   // to make virtual to be a part of the output
     toJSON: { virtuals : true},
     toObject: { virtuals : true}
 });
@@ -147,8 +148,10 @@ tourSchema.virtual('durationWeeks').get(function(){
 // We don’t want that; we want this to point to the document in question when the function is called.
 //This is done here not in the controllers as the schema has to follow MVC architecture and keep business logic as much in the model as possible.
 
-//---- Virtual populate------to get info about reviews when searching a tour,as it is done via parent ref.,thus tour(parent) does not have any info abot (reviews)
-//This feature will allow us to populate the tour with reviews without actually persisting an array of review IDs on the tour document. We begin by writing this method onto our tour model:
+//---- Virtual populate------to get info about reviews when searching a tour,as it is done via parent ref.,
+//thus tour(parent) does not have any info abot (reviews)
+//This feature will allow us to populate the tour with reviews without actually persisting an array of review IDs on the tour document.
+// We begin by writing this method onto our tour model:
 
 tourSchema.virtual('reviews', {
   ref: 'Review',//ref is the name of the model we want to reference
@@ -162,13 +165,14 @@ tourSchema.virtual('reviews', {
 // like saving a new document.
 
 //--------------//-----------//----------------
-//Document Middleware: ****runs before .save() and .create()****
+//Document Middleware:'save' will  ****runs before .save() and .create()**** mongoose querry only
 //(can actually work for remove and validate also)
 
 tourSchema.pre('save', function(next) {//here save is the hook
-    this.slug = slugify(this.name, { lower: true });//this points to the current document being saved.
-    next();//Now, we’ll use this function to create a slug out of the tour’s name using the slugify package from npm.
-  });// We’ll also give our middleware access to the next() function so that we don’t run into any problems when we add more middleware.
+    this.slug = slugify(this.name, { lower: true });// "this" points to the current document being saved.
+   //Now, we’ll use this function to create a slug out of the tour’s name using the slugify package from npm. 
+    next();// We’ll also give our middleware access to the next() function so that we don’t run into any problems when we add more middleware.
+  });
 
 
 //QUERY MIDDLEWARE
@@ -176,12 +180,12 @@ tourSchema.pre('save', function(next) {//here save is the hook
 
 tourSchema.pre(/^find/, function(next) {//The difference is that the hook is now 'find' (for the find() method) instead of 'save':
     
-    this.find({ secretTour: { $ne: true } });//this points to the current query, to which we’re chaining another find() method before its execution. 
+    this.find({ secretTour: { $ne: true } });//this points to the current query(not the doc as in doc middleware), to which we’re chaining another find() method before its execution. 
   //simply shows only those tours publicly which have secret tour ->false
     this.start = Date.now();
     next();
   });
-
+//used to populate guide detail from user to tour when getAll or getTour is querried
 tourSchema.pre(/^find/, function(next) {
     this.populate({
       path: 'guides',
@@ -191,7 +195,7 @@ tourSchema.pre(/^find/, function(next) {
     next();
   });
   
-tourSchema.post(/^find/, function(docs, next) {
+tourSchema.post(/^find/, function(docs, next) { //Here we have a finished doc and no "this" keyword
     
     console.log(`Query took ${Date.now() - this.start} milliseconds!`);
     next();

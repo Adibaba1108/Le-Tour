@@ -125,7 +125,7 @@ exports.getAllUsers = factory.getAll(User);
 exports.getUser = factory.getOne(User);
 // Do NOT update passwords with this! as this route is only for admins
 exports.updateUser = factory.updateOne(User);
-exports.deleteUser = factory.deleteOne(User); //can be don by admin only
+exports.deleteUser = factory.deleteOne(User); //can be done by admin only
 
 
 

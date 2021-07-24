@@ -56,14 +56,13 @@ app.use(express.json({ limit: '10kb' })); //Parses the data from body
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(cookieParser()); //Parses data from the cookies
 
+//To handle NoSQL query injection and XSS attacks
 // Data sanitization against NoSQL query injection
 app.use(mongoSanitize()); // This will get rid of any input that looks like a Mongo query,like gt
 
-//To handle NoSQL query injection and XSS attacks
-
 // Data sanitization against XSS
 app.use(xss());
-
+ 
 // Prevent parameter pollution 
 app.use(
     hpp({
@@ -101,7 +100,7 @@ app.all( '*' ,(req,res,next) => {//The all() method encompasses all types of req
     //and the asterisk accepts any URL
 
 
-    next(new AppError(`Can't find ${req.originalUrl} on this server!!`,404));  //passing the error in the next,
+    next(new AppError(`Can't find ${req.originalUrl} on this server!!`,404));  //passing the error in the next,//skip all the middleware and send it to our global error middleware function
     //so whenever we passes anything in next express will know there is an error and will skip all the middlewares in between and send it to global error handling middleware.
 
 }); 

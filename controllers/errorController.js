@@ -218,10 +218,12 @@ module.exports = (err, req, res, next) => {
     let error = { ...err };
     error.message = err.message;
 
+    //These names are specific for every error and needs to be same to work
     if (error.name === 'CastError') error = handleCastErrorDB(error);
     if (error.code === 11000) error = handleDuplicateFieldsDB(error);
     if (error.name === 'ValidationError')
       error = handleValidationErrorDB(error);
+    
     if (error.name === 'JsonWebTokenError') error = handleJWTError();
     if (error.name === 'TokenExpiredError') error = handleJWTExpiredError();
 

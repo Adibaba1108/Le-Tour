@@ -78,30 +78,31 @@ userSchema.pre('save', function(next) {
   next();
 });
 
+//only to show active users!!
 userSchema.pre(/^find/, function(next) {
   // this points to the current query
   this.find({ active: { $ne: false } });//we use { $ne: false } instead of true here because we recently created the active field and some of our users won’t have an explicit value in that field.
   next();
 });
 
-  //It is an instance method ,that we have created below,it means that it is gonna be available on all the documents of certain collection.
-  userSchema.methods.correctPassword = async function(candidatePassword,userPassword) 
-  {//this here points to the current doc
-    return await bcrypt.compare(candidatePassword, userPassword); 
-    //We cannot compare manually as the candidate password is not hashed and userPass is hashed,thus we used function-:"compare"
-  };
+//It is an instance method ,that we have created below,it means that it is gonna be available on all the documents of certain collection.
+userSchema.methods.correctPassword = async function(candidatePassword,userPassword) 
+{//this here points to the current doc
+  return await bcrypt.compare(candidatePassword, userPassword); 
+  //We cannot compare manually as the candidate password is not hashed and userPass is hashed,thus we used function-:"compare"
+};
 
   //Another Instance method-:
-  userSchema.methods.changedPasswordAfter = function(JWTTimestamp) {
-    if (this.passwordChangedAt) {//only if any user model have this field "passwordChangedAt" means then only we will check it is changed before the token given or after
-      //console.log(this.passwordChangedAt, JWTTimestamp)->in format -> 2021-04-18T00:00.000Z 1556804652
-      const changedTimestamp = parseInt(
-        this.passwordChangedAt.getTime() / 1000,
-        10 //base 
-      );
-  
-      return JWTTimestamp < changedTimestamp; //isued at 100 and changed at 200----> 100<200 thus true(yes changed)
-    }
+userSchema.methods.changedPasswordAfter = function(JWTTimestamp) {
+  if (this.passwordChangedAt) {//only if any user model have this field "passwordChangedAt" means then only we will check it is changed before the token given or after
+    //console.log(this.passwordChangedAt, JWTTimestamp)->in format -> 2021-04-18T00:00.000Z 1556804652
+    const changedTimestamp = parseInt(
+      this.passwordChangedAt.getTime() / 1000,
+      10 //base 
+    );
+
+    return JWTTimestamp < changedTimestamp; //isued at 100 and changed at 200----> 100<200 thus true(yes changed)
+}
   
     // False means NOT changed
     return false; //isued at 200 and changed at 100----> 200<100 thus false(not changed)
