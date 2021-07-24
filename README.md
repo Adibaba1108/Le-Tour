@@ -40,7 +40,7 @@
 ![rsz_userprofile](https://user-images.githubusercontent.com/58518192/72607635-44edff80-394b-11ea-8943-64c48f6f19aa.png)
 
 #### Admin Profile :
-![rsz_adminprofile](https://user-images.githubusercontent.com/58518192/72607648-4d463a80-394b-11ea-972f-a73160cfaa5b.png)
+![rsz_adminprofile](https://raw.githubusercontent.com/Adibaba1108/Tours-E-Booking-System/master/public/img/users/admin_page.png)
 
 
 ## How To Use
